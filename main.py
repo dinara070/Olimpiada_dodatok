@@ -1,14 +1,14 @@
 import streamlit as st
 import pandas as pd
 
-# Налаштування сторінки
+# 1. Налаштування сторінки
 st.set_page_config(
     page_title="Yasinskyi Geometry Olympiad",
     page_icon="📐",
     layout="centered"
 )
 
-# --- МОВНИЙ СЛОВНИК ---
+# 2. МОВНИЙ СЛОВНИК
 texts = {
     "UA": {
         "title": "Геометрична олімпіада імені В'ячеслава Ясінського",
@@ -22,6 +22,7 @@ texts = {
         "download_prob": "Умови задач (PDF)",
         "download_sol": "Розв'язання (PDF)",
         "contact_text": "З питань співпраці пишіть на:",
+        "error_file": "Файли для цього року ще не завантажені в папку archive."
     },
     "EN": {
         "title": "Yasinskyi Geometry Olympiad",
@@ -35,17 +36,18 @@ texts = {
         "download_prob": "Problems (PDF)",
         "download_sol": "Solutions (PDF)",
         "contact_text": "For cooperation, contact us at:",
+        "error_file": "Files for this year have not been uploaded to the archive folder yet."
     }
 }
 
-# --- БІЧНА ПАНЕЛЬ (НАВІГАЦІЯ) ---
-st.sidebar.image("https://yasinskyi-geometry-olympiad.com/img/yasinskyi_photo.jpg", caption="В.А. Ясінський") # Посилання на фото з оригіналу
+# 3. БІЧНА ПАНЕЛЬ (НАВІГАЦІЯ)
+st.sidebar.image("https://yasinskyi-geometry-olympiad.com/img/yasinskyi_photo.jpg", caption="В.А. Ясінський")
 lang = st.sidebar.radio("Language / Мова", ["UA", "EN"])
 t = texts[lang]
 
 menu = st.sidebar.selectbox("Меню", [t["menu_about"], t["menu_archive"], t["menu_results"], t["menu_contacts"]])
 
-# --- ГОЛОВНИЙ КОНТЕНТ ---
+# 4. ГОЛОВНИЙ КОНТЕНТ
 
 if menu == t["menu_about"]:
     st.title(t["title"])
@@ -63,32 +65,41 @@ if menu == t["menu_about"]:
 elif menu == t["menu_archive"]:
     st.header(t["archive_header"])
     
+    # Список років (можна додавати нові)
     years = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017]
     selected_year = st.selectbox("Оберіть рік / Select year", years)
     
     st.subheader(f"Рік {selected_year}")
     
-    # Логіка для завантаження файлів (файли мають бути в папці archive/ на GitHub)
+    # Шляхи до файлів у папці archive (структура: archive/2024/problems_ua.pdf)
+    path_prob = f"archive/{selected_year}/problems_ua.pdf"
+    path_sol = f"archive/{selected_year}/solutions_ua.pdf"
+    
     col_a, col_b = st.columns(2)
     
-    with col_a:
-        # Приклад кнопки завантаження (замініть на реальні шляхи до файлів)
-        st.download_button(t["download_prob"], data="content", file_name=f"{selected_year}_problems.pdf")
+    try:
+        # Спроба відкрити та створити кнопку для умов
+        with col_a:
+            with open(path_prob, "rb") as f:
+                st.download_button(t["download_prob"], data=f, file_name=f"Yasinskyi_{selected_year}_prob.pdf")
         
-    with col_b:
-        st.download_button(t["download_sol"], data="content", file_name=f"{selected_year}_solutions.pdf")
-    
-    st.warning("Примітка: Файли будуть доступні після того, як ви завантажите їх у папку archive вашого репозиторію.")
+        # Спроба відкрити та створити кнопку для розв'язків
+        with col_b:
+            with open(path_sol, "rb") as f:
+                st.download_button(t["download_sol"], data=f, file_name=f"Yasinskyi_{selected_year}_sol.pdf")
+                
+    except FileNotFoundError:
+        st.error(t["error_file"])
+        st.info(f"Очікувані шляхи: \n- {path_prob} \n- {path_sol}")
 
 elif menu == t["menu_results"]:
     st.header(t["menu_results"])
     st.write("Статистика попередніх років:")
     
-    # Приклад таблиці
     data = {
-        "Рік": [2025, 2024, 2023],
-        "Учасників": [139, 58, 100],
-        "Країн": [7, 6, 3]
+        "Рік": [2025, 2024, 2023, 2022, 2021],
+        "Учасників": [139, 58, 100, 145, 169],
+        "Країн": [7, 6, 3, 2, 1]
     }
     df = pd.DataFrame(data)
     st.table(df)
@@ -99,6 +110,6 @@ elif menu == t["menu_contacts"]:
     st.code("yasinskyi.geometry.olympiad@gmail.com")
     st.write("Ми завжди шукаємо оригінальні авторські задачі!")
 
-# Футер
+# 5. ФУТЕР
 st.markdown("---")
 st.caption("© 2026 Yasinskyi Geometry Olympiad Mirror")
