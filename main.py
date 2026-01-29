@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import os
 
 # 1. Налаштування сторінки
 st.set_page_config(
@@ -8,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. МОВНИЙ СЛОВНИК (Розширений)
+# 2. МОВНИЙ СЛОВНИК
 texts = {
     "UA": {
         "title": "Геометрична олімпіада імені В'ячеслава Ясінського",
@@ -31,9 +32,10 @@ texts = {
         "form_fields": "📝 **Поля форми:** ПІБ, e-mail, Країна, Місто, Школа, Клас.",
         "download_prob": "Умови задач (PDF)",
         "download_sol": "Розв'язання (PDF)",
-        "archive_header": "Архів задач та розв'язків (2017–2025)",
+        "archive_header": "Архів задач та розв'язків",
         "contact_text": "Ми завжди шукаємо оригінальні геометричні задачі! Пишіть нам на:",
-        "error_file": "Файли для цього року ще не завантажені в папку archive."
+        "file_not_found": "Файл ще не завантажено або він має іншу назву.",
+        "lang_suffix": "ukr"
     },
     "EN": {
         "title": "Yasinskyi Geometry Olympiad",
@@ -56,14 +58,21 @@ texts = {
         "form_fields": "📝 **Form fields:** Full name, E-mail, Country, City, School, Grade.",
         "download_prob": "Problems (PDF)",
         "download_sol": "Solutions (PDF)",
-        "archive_header": "Problems & Solutions Archive (2017–2025)",
+        "archive_header": "Problems & Solutions Archive",
         "contact_text": "We are always looking for original geometry problems! Contact us at:",
-        "error_file": "Files for this year have not been uploaded to the archive folder yet."
+        "file_not_found": "File not found or has a different name.",
+        "lang_suffix": "eng"
     }
 }
 
 # 3. БІЧНА ПАНЕЛЬ
-st.sidebar.image("https://yasinskyi-geometry-olympiad.com/img/yasinskyi_photo.jpg", caption="В.А. Ясінський")
+# Намагаємось завантажити локальне фото, якщо його немає - беремо з мережі
+photo_path = "assets/yasinskyi.jpg"
+if os.path.exists(photo_path):
+    st.sidebar.image(photo_path, caption="В.А. Ясінський")
+else:
+    st.sidebar.image("https://yasinskyi-geometry-olympiad.com/img/yasinskyi_photo.jpg", caption="В.А. Ясінський")
+
 lang = st.sidebar.radio("Language / Мова", ["UA", "EN"])
 t = texts[lang]
 
@@ -100,20 +109,29 @@ elif menu == t["menu_archive"]:
     
     st.subheader(f"Рік {selected_year}")
     
-    # Спроба додати дві мови для файлів у майбутньому
-    path_prob = f"archive/{selected_year}/problems_ua.pdf"
-    path_sol = f"archive/{selected_year}/solutions_ua.pdf"
+    # Побудова шляхів згідно з вашими скріншотами GitHub: archive/рік/ygo-рік-problems-ukr.pdf
+    suffix = t["lang_suffix"]
+    path_prob = f"archive/{selected_year}/ygo-{selected_year}-problems-{suffix}.pdf"
+    path_sol = f"archive/{selected_year}/ygo-{selected_year}-solutions-{suffix}.pdf"
     
     col_a, col_b = st.columns(2)
-    try:
+    
+    # Перевірка та кнопка для умов
+    if os.path.exists(path_prob):
         with col_a:
             with open(path_prob, "rb") as f:
-                st.download_button(t["download_prob"], data=f, file_name=f"Yasinskyi_{selected_year}_prob.pdf")
+                st.download_button(t["download_prob"], data=f, file_name=f"YGO_{selected_year}_problems.pdf")
+    else:
+        st.error(f"{t['download_prob']}: {t['file_not_found']}")
+        st.caption(f"Очікуваний шлях: {path_prob}")
+
+    # Перевірка та кнопка для розв'язків
+    if os.path.exists(path_sol):
         with col_b:
             with open(path_sol, "rb") as f:
-                st.download_button(t["download_sol"], data=f, file_name=f"Yasinskyi_{selected_year}_sol.pdf")
-    except FileNotFoundError:
-        st.error(t["error_file"])
+                st.download_button(t["download_sol"], data=f, file_name=f"YGO_{selected_year}_solutions.pdf")
+    else:
+        st.info(f"{t['download_sol']}: {t['file_not_found']}")
 
 elif menu == t["menu_results"]:
     st.header(t["menu_results"])
@@ -125,7 +143,6 @@ elif menu == t["menu_results"]:
         "Країни (Countries)": [7, 6, 3, 2, 1, 1]
     }
     st.table(pd.DataFrame(data))
-    st.caption("Детальні списки переможців доступні в PDF файлах архіву.")
 
 elif menu == t["menu_contacts"]:
     st.header(t["menu_contacts"])
