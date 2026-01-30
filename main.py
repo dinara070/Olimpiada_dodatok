@@ -34,8 +34,7 @@ texts = {
         "download_sol": "Розв'язання (PDF)",
         "archive_header": "Архів задач та розв'язків",
         "contact_text": "Ми завжди шукаємо оригінальні геометричні задачі! Пишіть нам на:",
-        "file_not_found": "Файл ще не завантажено або він має іншу назву.",
-        "lang_suffix": "ukr"
+        "file_not_found": "Файл ще не завантажено або він має іншу назву."
     },
     "EN": {
         "title": "Yasinskyi Geometry Olympiad",
@@ -60,13 +59,11 @@ texts = {
         "download_sol": "Solutions (PDF)",
         "archive_header": "Problems & Solutions Archive",
         "contact_text": "We are always looking for original geometry problems! Contact us at:",
-        "file_not_found": "File not found or has a different name.",
-        "lang_suffix": "eng"
+        "file_not_found": "File not found or has a different name."
     }
 }
 
 # 3. БІЧНА ПАНЕЛЬ
-# Намагаємось завантажити локальне фото, якщо його немає - беремо з мережі
 photo_path = "assets/yasinskyi.jpg"
 if os.path.exists(photo_path):
     st.sidebar.image(photo_path, caption="В.А. Ясінський")
@@ -109,14 +106,12 @@ elif menu == t["menu_archive"]:
     
     st.subheader(f"Рік {selected_year}")
     
-    # Побудова шляхів згідно з вашими скріншотами GitHub: archive/рік/ygo-рік-problems-ukr.pdf
-    suffix = t["lang_suffix"]
-    path_prob = f"archive/{selected_year}/ygo-{selected_year}-problems-{suffix}.pdf"
-    path_sol = f"archive/{selected_year}/ygo-{selected_year}-solutions-{suffix}.pdf"
+    # ЗМІНА ТУТ: Ми завжди використовуємо суфікс 'ukr', оскільки на GitHub файли тільки цією мовою
+    path_prob = f"archive/{selected_year}/ygo-{selected_year}-problems-ukr.pdf"
+    path_sol = f"archive/{selected_year}/ygo-{selected_year}-solutions-ukr.pdf"
     
     col_a, col_b = st.columns(2)
     
-    # Перевірка та кнопка для умов
     if os.path.exists(path_prob):
         with col_a:
             with open(path_prob, "rb") as f:
@@ -125,7 +120,6 @@ elif menu == t["menu_archive"]:
         st.error(f"{t['download_prob']}: {t['file_not_found']}")
         st.caption(f"Очікуваний шлях: {path_prob}")
 
-    # Перевірка та кнопка для розв'язків
     if os.path.exists(path_sol):
         with col_b:
             with open(path_sol, "rb") as f:
